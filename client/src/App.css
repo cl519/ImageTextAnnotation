@@ -21,6 +21,10 @@ body,
   align-items: center;
 }
 
+.right-container {
+  display: flex;
+}
+
 .canvas-container {
   position: relative;
 }

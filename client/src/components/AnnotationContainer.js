@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
+import AnnotationStatus from "./AnnotationStatus";
+import Infobar from "./Infobar";
 
 const Rectangle = ({ rectangle, onEraseClick }) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -156,20 +158,26 @@ const AnnotationContainer = ({ selectedTask }) => {
   }, []);
 
   return (
-    <div className="canvas-container">
-      <canvas ref={canvasRef} width={500} height={500}></canvas>
-      {rectangles.map((rectangle, index) => (
-        <Rectangle
-          key={index}
-          rectangle={rectangle}
-          onEraseClick={() => handleEraseClick(index)}
-        />
-      ))}
-      <div className="button-container">
-        <button className="reset-button" onClick={removeAllRectangle}>
-          Reset
-        </button>
-        <button className="submit-button">Submit</button>
+    <div className="right-container">
+      <div className="canvas-container">
+        <canvas ref={canvasRef} width={500} height={500}></canvas>
+        {rectangles.map((rectangle, index) => (
+          <Rectangle
+            key={index}
+            rectangle={rectangle}
+            onEraseClick={() => handleEraseClick(index)}
+          />
+        ))}
+        <div className="button-container">
+          <button className="reset-button" onClick={removeAllRectangle}>
+            Reset
+          </button>
+          <button className="submit-button">Submit</button>
+        </div>
+      </div>
+      <div>
+        <Infobar selectedTask={selectedTask} />
+        <AnnotationStatus />
       </div>
     </div>
   );

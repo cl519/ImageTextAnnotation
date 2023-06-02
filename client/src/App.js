@@ -8,6 +8,10 @@ function App() {
   const [tasks, setTasks] = useState([]);
   const [selectedTask, setSelectedTask] = useState(); // we can select the first image by default.
 
+  const onSelectTask = (task) => {
+    setSelectedTask(task);
+  };
+
   useEffect(() => {
     try {
       fetch("http://localhost:8000/api/task/annotation")
@@ -24,9 +28,12 @@ function App() {
 
   return (
     <div className="main-container">
-      <Sidebar selectedTask={selectedTask} tasks={tasks}></Sidebar>
+      <Sidebar
+        selectedTask={selectedTask}
+        onSelectTask={onSelectTask}
+        tasks={tasks}
+      ></Sidebar>
       <AnnotationContainer selectedTask={selectedTask}></AnnotationContainer>
-      <Infobar selectedTask={selectedTask}></Infobar>
     </div>
   );
 }

@@ -22,7 +22,6 @@ const Infobar = ({ selectedTask }) => {
           <br />
         </p>
       </div>
-      <AnnotationStatus />
     </div>
   );
 };
