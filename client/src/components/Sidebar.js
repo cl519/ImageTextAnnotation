@@ -1,16 +1,20 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import textbox from "../textbox.jpeg";
 
-const Sidebar = ({ selectedTask, onSelectTask, tasks }) => {
+const Sidebar = ({ selectedTask, onSelectTask, tasks, label, onSetLabel }) => {
   useEffect(() => {
-    console.log("tasks: ", tasks);
-    console.log(selectedTask);
-  });
+    onSetLabel(selectedTask?.params.objects_to_annotate[0] ?? null);
+    console.log("SIDE BAR USE EFFECT GETS CALLED: ", selectedTask);
+  }, [selectedTask]);
 
   const handleSelectTask = (task) => {
     onSelectTask(task);
   };
   // http://react.tips/radio-buttons-in-react-16/
+
+  const handleSetLabel = (object) => {
+    onSetLabel(object); // Update state variable when an option is selected
+  };
 
   return (
     <div>
@@ -19,8 +23,14 @@ const Sidebar = ({ selectedTask, onSelectTask, tasks }) => {
         {selectedTask?.params.objects_to_annotate.map((object, index) => {
           return (
             <div className="form-check" key={index}>
-              <input type="radio" id={object} name="object" />
-              <label for={object}>{object}</label>
+              <input
+                type="radio"
+                id={object}
+                name="object"
+                onChange={() => handleSetLabel(object)}
+                checked={label === object}
+              />
+              <label htmlFor={object}>{object}</label>
             </div>
           );
         })}
@@ -28,7 +38,7 @@ const Sidebar = ({ selectedTask, onSelectTask, tasks }) => {
       <div className="task-queue">
         <h1>Up Next</h1>
         {tasks.map((task, index) => {
-          console.log("task.attachment_type: ", task.attachment_type);
+          // console.log("task.attachment_type: ", task.attachment_type);
           if (task.params.attachment_type === "text") {
             console.log("type text!");
             return (

@@ -1,15 +1,21 @@
 import "./App.css";
 import Sidebar from "./components/Sidebar";
-import AnnotationContainer from "./components/AnnotationContainer";
+import ImageAnnotationContainer from "./components/ImageAnnotationContainer";
+import TextAnnotationContainer from "./components/TextAnnotationContainer";
 import Infobar from "./components/Infobar";
 import React, { useEffect, useState } from "react";
 
 function App() {
   const [tasks, setTasks] = useState([]);
-  const [selectedTask, setSelectedTask] = useState(); // we can select the first image by default.
+  const [selectedTask, setTask] = useState(); // we can select the first image by default.
+  const [label, setLabel] = useState();
 
-  const onSelectTask = (task) => {
-    setSelectedTask(task);
+  const onSetTask = (task) => {
+    setTask(task);
+  };
+
+  const onSetLabel = (label) => {
+    setLabel(label);
   };
 
   useEffect(() => {
@@ -17,9 +23,9 @@ function App() {
       fetch("http://localhost:8000/api/task/annotation")
         .then((response) => response.json())
         .then((data) => {
-          console.log(data);
+          // console.log(data);
           setTasks(data);
-          setSelectedTask(data[0] ?? undefined);
+          setTask(data[0] ?? undefined);
         });
     } catch (error) {
       console.log(error);
@@ -30,10 +36,17 @@ function App() {
     <div className="main-container">
       <Sidebar
         selectedTask={selectedTask}
-        onSelectTask={onSelectTask}
+        onSelectTask={onSetTask}
         tasks={tasks}
+        label={label}
+        onSetLabel={onSetLabel}
       ></Sidebar>
-      <AnnotationContainer selectedTask={selectedTask}></AnnotationContainer>
+
+      {selectedTask?.params.attachment_type === "image" ? (
+        <ImageAnnotationContainer selectedTask={selectedTask} label={label} />
+      ) : (
+        <TextAnnotationContainer selectedTask={selectedTask} label={label} />
+      )}
     </div>
   );
 }

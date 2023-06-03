@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import AnnotationStatus from "./AnnotationStatus";
 import Infobar from "./Infobar";
 
@@ -37,28 +37,30 @@ const Rectangle = ({ rectangle, onEraseClick }) => {
   );
 };
 
-const AnnotationContainer = ({ selectedTask }) => {
+const ImageAnnotationContainer = ({ selectedTask, label }) => {
   const [rectangles, setRectangles] = useState([]);
   const canvasRef = useRef();
   const imageRef = useRef();
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [startY, setStartY] = useState(0);
+  const [currentX, setCurrentX] = useState(0);
+  const [currentY, setCurrentY] = useState(0);
+  const ctxRef = useRef();
 
-  let ctx = null;
-  let isDrawing = false;
-  let startX = 0;
-  let startY = 0;
-  let currentX = 0;
-  let currentY = 0;
+  console.log("render", label);
 
-  const addRectangle = () => {
+  const addRectangle = useCallback(() => {
+    console.log("inside addRectangle, label: ", label);
     const newRectangle = {
       startX,
       startY,
       width: currentX - startX,
       height: currentY - startY,
-      object: selectedTask?.selectedObject,
+      object: label,
     };
     setRectangles((prevRectangles) => [...prevRectangles, newRectangle]);
-  };
+  }, [currentX, currentY, label, startX, startY]);
 
   const removeRectangle = (index) => {
     setRectangles((prevRectangles) =>
@@ -74,42 +76,36 @@ const AnnotationContainer = ({ selectedTask }) => {
     removeRectangle(index);
   };
 
-  const redrawCanvasWithImage = () => {
+  const redrawCanvasWithImage = useCallback(() => {
     // Clear the canvas
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctxRef.current.clearRect(
+      0,
+      0,
+      ctxRef.current.canvas.width,
+      ctxRef.current.canvas.height
+    );
 
     // Redraw the image
     const image = imageRef.current;
 
-    console.log("inside onload, image: ", image);
-    ctx.drawImage(image, 0, 0, 500, 500);
-  };
+    // console.log("inside onload, image: ", image);
+    ctxRef.current.drawImage(image, 0, 0, 500, 500);
+  }, []);
 
-  const handleMouseDown = (event) => {
-    console.log("mouse down");
-    isDrawing = true;
-    startX = event.offsetX;
-    startY = event.offsetY;
-  };
+  const handleMouseDown = useCallback(
+    (event) => {
+      console.log("mouse down");
+      setIsDrawing(true);
+      setStartX(event.offsetX);
+      setStartY(event.offsetY);
+      setCurrentX(event.offsetX);
+      setCurrentY(event.offsetY);
+    },
+    [setIsDrawing]
+  );
 
-  const handleMouseMove = (event) => {
-    if (!isDrawing) return;
-    console.log({ x: event.offsetX, y: event.offsetY });
-    currentX = event.offsetX;
-    currentY = event.offsetY;
-    preview();
-  };
-
-  const handleMouseUp = () => {
-    if (isDrawing) {
-      isDrawing = false;
-      redrawCanvasWithImage();
-      addRectangle();
-    }
-  };
-
-  const preview = () => {
-    if (!ctx) {
+  const preview = useCallback(() => {
+    if (!ctxRef) {
       return;
     }
     console.log("PREVIEW!");
@@ -117,23 +113,67 @@ const AnnotationContainer = ({ selectedTask }) => {
     redrawCanvasWithImage();
 
     // Draw the preview box
-    ctx.strokeStyle = "red";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.rect(startX, startY, currentX - startX, currentY - startY);
-    ctx.stroke();
-  };
+    ctxRef.current.strokeStyle = "red";
+    ctxRef.current.lineWidth = 2;
+    ctxRef.current.beginPath();
+    ctxRef.current.rect(startX, startY, currentX - startX, currentY - startY);
+    ctxRef.current.stroke();
+  }, [currentX, currentY, startX, startY, redrawCanvasWithImage]);
+
+  const handleMouseMove = useCallback(
+    (event) => {
+      if (!isDrawing) return;
+      // console.log({ x: event.offsetX, y: event.offsetY });
+      console.log("mouse is moving!");
+      setCurrentX(event.offsetX);
+      setCurrentY(event.offsetY);
+      preview();
+    },
+    [isDrawing, preview]
+  );
+
+  const handleMouseUp = useCallback(() => {
+    if (isDrawing) {
+      setIsDrawing(false);
+      redrawCanvasWithImage();
+      addRectangle();
+      setCurrentX(undefined);
+      setCurrentY(undefined);
+      setStartX(undefined);
+      setStartY(undefined);
+    }
+  }, [addRectangle, redrawCanvasWithImage, isDrawing]);
+
+  // useEffect(() => {
+  //   console.log("inside image annotation container, label changed label is: ");
+  //   const addRectangle = () => {
+  //     const newRectangle = {
+  //       startX,
+  //       startY,
+  //       width: currentX - startX,
+  //       height: currentY - startY,
+  //       object: label,
+  //     };
+  //     setRectangles((prevRectangles) => [...prevRectangles, newRectangle]);
+  //   };
+
+  //   // Rest of the code
+
+  //   return () => {
+  //     // Clean up any necessary resources
+  //   };
+  // }, [label]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    ctx = canvas.getContext("2d");
+    ctxRef.current = canvas.getContext("2d");
 
     const image = new Image();
     image.src = selectedTask?.params.attachment;
-    console.log("image.src: ", image.src);
+    // console.log("image.src: ", image.src);
     image.onload = () => {
       imageRef.current = image;
-      ctx.drawImage(image, 0, 0, 500, 500);
+      ctxRef.current.drawImage(image, 0, 0, 500, 500);
     };
   }, [selectedTask?.params.attachment]);
 
@@ -155,7 +195,7 @@ const AnnotationContainer = ({ selectedTask }) => {
       canvas.removeEventListener("mouseup", handleMouseUp);
       canvas.removeEventListener("mouseout", handleMouseUp);
     };
-  }, []);
+  }, [handleMouseDown, handleMouseMove, handleMouseUp]);
 
   return (
     <div className="right-container">
@@ -176,11 +216,14 @@ const AnnotationContainer = ({ selectedTask }) => {
         </div>
       </div>
       <div>
-        <Infobar selectedTask={selectedTask} />
-        <AnnotationStatus />
+        <Infobar
+          selectedTask={selectedTask}
+          labels={rectangles}
+          label={label}
+        />
       </div>
     </div>
   );
 };
 
-export default AnnotationContainer;
+export default ImageAnnotationContainer;
