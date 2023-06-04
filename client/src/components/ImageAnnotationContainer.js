@@ -48,10 +48,21 @@ const ImageAnnotationContainer = ({ selectedTask, label }) => {
   const [currentY, setCurrentY] = useState(0);
   const ctxRef = useRef();
 
-  console.log("render", label);
+  const removeAllRectangle = () => {
+    setRectangles(() => []);
+  };
+
+  const handleEraseClick = (index) => {
+    removeRectangle(index);
+  };
+
+  const removeRectangle = (index) => {
+    setRectangles((prevRectangles) =>
+      prevRectangles.filter((_, i) => i !== index)
+    );
+  };
 
   const addRectangle = useCallback(() => {
-    console.log("inside addRectangle, label: ", label);
     const newRectangle = {
       startX,
       startY,
@@ -61,20 +72,6 @@ const ImageAnnotationContainer = ({ selectedTask, label }) => {
     };
     setRectangles((prevRectangles) => [...prevRectangles, newRectangle]);
   }, [currentX, currentY, label, startX, startY]);
-
-  const removeRectangle = (index) => {
-    setRectangles((prevRectangles) =>
-      prevRectangles.filter((_, i) => i !== index)
-    );
-  };
-
-  const removeAllRectangle = () => {
-    setRectangles(() => []);
-  };
-
-  const handleEraseClick = (index) => {
-    removeRectangle(index);
-  };
 
   const redrawCanvasWithImage = useCallback(() => {
     // Clear the canvas
@@ -143,26 +140,6 @@ const ImageAnnotationContainer = ({ selectedTask, label }) => {
       setStartY(undefined);
     }
   }, [addRectangle, redrawCanvasWithImage, isDrawing]);
-
-  // useEffect(() => {
-  //   console.log("inside image annotation container, label changed label is: ");
-  //   const addRectangle = () => {
-  //     const newRectangle = {
-  //       startX,
-  //       startY,
-  //       width: currentX - startX,
-  //       height: currentY - startY,
-  //       object: label,
-  //     };
-  //     setRectangles((prevRectangles) => [...prevRectangles, newRectangle]);
-  //   };
-
-  //   // Rest of the code
-
-  //   return () => {
-  //     // Clean up any necessary resources
-  //   };
-  // }, [label]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
