@@ -16,6 +16,28 @@ body,
   background-color: #ededed;
 }
 
+.sidebar {
+  padding: 15px;
+}
+
+.annotation-options {
+  background-color: white;
+  box-shadow: 5px 5px 5px 0px rgba(209, 209, 209, 0.75);
+  padding: 0px 4px 6px 4px;
+  border-radius: 4px;
+}
+
+.task-queue {
+  background-color: white;
+  box-shadow: 5px 5px 5px 0px rgba(209, 209, 209, 0.75);
+  padding: 0px 4px 6px 4px;
+  border-radius: 4px;
+}
+
+.sidebar-image {
+  border: none;
+}
+
 .form-check {
   display: flex;
   align-items: center;

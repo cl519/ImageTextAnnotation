@@ -2,7 +2,12 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import AnnotationStatus from "./AnnotationStatus";
 import Infobar from "./Infobar";
 
-const Rectangle = ({ rectangle, onEraseClick, isDrawing }) => {
+const Rectangle = ({
+  rectangle,
+  onEraseClick,
+  isDrawing,
+  handleParentMouseDown,
+}) => {
   const [isHovered, setIsHovered] = useState(false);
 
   const handleMouseEnter = () => {
@@ -12,6 +17,11 @@ const Rectangle = ({ rectangle, onEraseClick, isDrawing }) => {
   const handleMouseLeave = () => {
     setIsHovered(false);
   };
+
+  // TODO: handle rectangle draws starting from inside existing rectangle
+  // const handleMouseDown = (e) => {
+  //   handleParentMouseDown(e);
+  // };
 
   return (
     <div
@@ -26,6 +36,7 @@ const Rectangle = ({ rectangle, onEraseClick, isDrawing }) => {
       }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
+      // onMouseDown={handleMouseDown}
     >
       {isHovered && (
         <>
@@ -96,7 +107,7 @@ const ImageAnnotationContainer = ({ selectedTask, label }) => {
 
   const handleMouseDown = useCallback(
     (event) => {
-      console.log("mouse down");
+      console.log("mouse down, event.offsetX: ", event.offsetX);
       setIsDrawing(true);
       setStartX(event.offsetX);
       setStartY(event.offsetY);
@@ -120,6 +131,7 @@ const ImageAnnotationContainer = ({ selectedTask, label }) => {
     const rectWidth = Math.abs(currentX - startX);
     const rectHeight = Math.abs(currentY - startY);
 
+    console.log("ABOUT TO DRAW PREVIEW BOX");
     // Draw the preview box
     ctxRef.current.strokeStyle = "red";
     ctxRef.current.lineWidth = 2;
@@ -151,6 +163,10 @@ const ImageAnnotationContainer = ({ selectedTask, label }) => {
       setStartY(undefined);
     }
   }, [addRectangle, redrawCanvasWithImage, isDrawing]);
+
+  useEffect(() => {
+    removeAllRectangle();
+  }, [selectedTask]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -195,6 +211,7 @@ const ImageAnnotationContainer = ({ selectedTask, label }) => {
             rectangle={rectangle}
             onEraseClick={() => handleEraseClick(index)}
             isDrawing={isDrawing}
+            handleParentMouseDown={handleMouseDown}
           />
         ))}
         <div className="button-container">

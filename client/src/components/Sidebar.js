@@ -17,7 +17,7 @@ const Sidebar = ({ selectedTask, onSelectTask, tasks, label, onSetLabel }) => {
   };
 
   return (
-    <div>
+    <div className="sidebar">
       <div className="annotation-options">
         <h1>Objects</h1>
         {selectedTask?.params.objects_to_annotate.map((object, index) => {
@@ -42,16 +42,22 @@ const Sidebar = ({ selectedTask, onSelectTask, tasks, label, onSetLabel }) => {
           if (task.params.attachment_type === "text") {
             console.log("type text!");
             return (
-              <div className="sidebar-image" key={index}>
-                <button onClick={() => handleSelectTask(tasks[index])}>
+              <div className="sidebar-queue" key={index}>
+                <button
+                  className="sidebar-image"
+                  onClick={() => handleSelectTask(tasks[index])}
+                >
                   <img src={textbox} alt="task" width="150" height="100" />
                 </button>
               </div>
             );
           } else if (task.params.attachment_type === "image") {
             return (
-              <div className="sidebar-image" key={index}>
-                <button onClick={() => handleSelectTask(tasks[index])}>
+              <div className="sidebar-queue" key={index}>
+                <button
+                  className="sidebar-image"
+                  onClick={() => handleSelectTask(tasks[index])}
+                >
                   <img
                     src={task.params.attachment}
                     alt="task"
