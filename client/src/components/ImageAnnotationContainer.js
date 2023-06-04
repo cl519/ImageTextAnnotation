@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import AnnotationStatus from "./AnnotationStatus";
 import Infobar from "./Infobar";
 
-const Rectangle = ({ rectangle, onEraseClick }) => {
+const Rectangle = ({ rectangle, onEraseClick, isDrawing }) => {
   const [isHovered, setIsHovered] = useState(false);
 
   const handleMouseEnter = () => {
@@ -22,7 +22,7 @@ const Rectangle = ({ rectangle, onEraseClick }) => {
         width: rectangle.width,
         height: rectangle.height,
         border: `2px solid red`,
-        pointerEvents: "auto",
+        pointerEvents: isDrawing ? "none" : "auto",
       }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -63,16 +63,21 @@ const ImageAnnotationContainer = ({ selectedTask, label }) => {
   };
 
   const addRectangle = useCallback(() => {
+    const rectStartX = Math.min(startX, currentX);
+    const rectStartY = Math.min(startY, currentY);
+    const rectWidth = Math.abs(currentX - startX);
+    const rectHeight = Math.abs(currentY - startY);
+
     const newRectangle = {
-      startX,
-      startY,
-      width: currentX - startX,
-      height: currentY - startY,
+      startX: rectStartX,
+      startY: rectStartY,
+      width: rectWidth,
+      height: rectHeight,
       object: label,
     };
+
     setRectangles((prevRectangles) => [...prevRectangles, newRectangle]);
   }, [currentX, currentY, label, startX, startY]);
-
   const redrawCanvasWithImage = useCallback(() => {
     // Clear the canvas
     ctxRef.current.clearRect(
@@ -109,11 +114,17 @@ const ImageAnnotationContainer = ({ selectedTask, label }) => {
 
     redrawCanvasWithImage();
 
+    // Calculate rectangle dimensions
+    const rectStartX = Math.min(startX, currentX);
+    const rectStartY = Math.min(startY, currentY);
+    const rectWidth = Math.abs(currentX - startX);
+    const rectHeight = Math.abs(currentY - startY);
+
     // Draw the preview box
     ctxRef.current.strokeStyle = "red";
     ctxRef.current.lineWidth = 2;
     ctxRef.current.beginPath();
-    ctxRef.current.rect(startX, startY, currentX - startX, currentY - startY);
+    ctxRef.current.rect(rectStartX, rectStartY, rectWidth, rectHeight);
     ctxRef.current.stroke();
   }, [currentX, currentY, startX, startY, redrawCanvasWithImage]);
 
@@ -183,6 +194,7 @@ const ImageAnnotationContainer = ({ selectedTask, label }) => {
             key={index}
             rectangle={rectangle}
             onEraseClick={() => handleEraseClick(index)}
+            isDrawing={isDrawing}
           />
         ))}
         <div className="button-container">
